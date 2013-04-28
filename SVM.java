@@ -4,6 +4,7 @@ import java.util.*;
 
 public class SVM {
 
+  private final double COMPARE_MARGIN = 0.00001;
   // Hyperplane weights.
   RealVector weights;
 
@@ -17,6 +18,42 @@ public class SVM {
    */
   public SVM(List<TrainingInstance> trainingSet, double lambda, double eta) {
     // TODO: Implement me!
+    int dimension = trainingSet.get(0).getFeatures().getDimension();
+    RealVector w = new RealVector(dimension);
+    for (TrainingInstance instance : trainingSet) {
+      RealVector gradientStep = gradient(w, instance).scaleThis(eta * -1);
+      projection(w.add(gradientStep), lambda);
+    }
+    this.weights = w;
+  }
+
+  /** 
+  * Helper functions for the SVM
+  */
+
+  /** 
+  * Project a vector w into the feasible set with radius lambda
+  */
+  private void projection(RealVector w, double lambda) {
+    if (w.getNorm() > lambda) {
+      double scaleFactor = lambda * w.getNorm();
+      w.scaleThis(scaleFactor);
+    } 
+    return;
+  }
+
+  /**
+  * Calculate gradient
+  */
+
+  private RealVector gradient(RealVector w, TrainingInstance instance) {
+    double value = instance.getLabel() * w.dotProduct(instance.getFeatures());
+    int dimension = w.getDimension();
+    if (value >= 1) {
+      return new RealVector(dimension);
+    } else {
+      return instance.getFeatures().scale(instance.getLabel * -1);
+    }
   }
 
   /**
