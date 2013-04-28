@@ -16,12 +16,15 @@ public class PSGD {
    */
   public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, LongWritable, Text> {
 
-    final int K = CHOOSE_ME;
+    final int K = 10;
+    final Random randomGenerator = new Random();
 
     /**
      * Spread the data around on K different machines.
      */
     public void map(LongWritable key, Text value, OutputCollector<LongWritable, Text> output, Reporter reporter) throws IOException {
+      LongWritable machineId = new LongWritable(randomGenerator.nextInt(K));
+      output.collect(machineId, value);
     }
   }
 
@@ -43,13 +46,14 @@ public class PSGD {
         trainingSet.add(instance);
       }
 
-      SVM model = new SVM(trainingSet, CHOOSE_LEARNING_RATE, CHOOSE_LAMBDA);
+      SVM model = new SVM(trainingSet, 0.1, 0.25);
 
       /**
        * null is important here since we don't want to do additional preprocessing
        * to remove the key. The value should be the SVM model (take a look at method
        * toString in SVM.java.
        */
+      Text outputValue = new Text();
       outputValue.set(model.toString());
       output.collect(null, outputValue);
     }
@@ -72,7 +76,7 @@ public class PSGD {
 
     // set to the same K as above for optimal performance on the cluster
     // If you don't, you will likely have timeout problems.
-    conf.setNumReduceTasks(int K);
+    conf.setNumReduceTasks(10);
 
     FileInputFormat.setInputPaths(conf, new Path(args[0]));
     FileOutputFormat.setOutputPath(conf, new Path(args[1]));

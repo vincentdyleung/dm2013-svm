@@ -22,7 +22,8 @@ public class SVM {
     RealVector w = new RealVector(dimension);
     for (TrainingInstance instance : trainingSet) {
       RealVector gradientStep = gradient(w, instance).scaleThis(eta * -1);
-      projection(w.add(gradientStep), lambda);
+      w.add(gradientStep);
+      projection(w, lambda);
     }
     this.weights = w;
   }
@@ -35,7 +36,7 @@ public class SVM {
   * Project a vector w into the feasible set with radius lambda
   */
   private void projection(RealVector w, double lambda) {
-    if (w.getNorm() > lambda) {
+    if (w.getNorm() > Math.sqrt(lambda)) {
       double scaleFactor = lambda * w.getNorm();
       w.scaleThis(scaleFactor);
     } 
@@ -52,7 +53,7 @@ public class SVM {
     if (value >= 1) {
       return new RealVector(dimension);
     } else {
-      return instance.getFeatures().scale(instance.getLabel * -1);
+      return instance.getFeatures().scale(instance.getLabel() * -1);
     }
   }
 
