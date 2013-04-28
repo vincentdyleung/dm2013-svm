@@ -16,7 +16,7 @@ public class PSGD {
    */
   public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, LongWritable, Text> {
 
-    final int K = 10;
+    final int K = 50;
     final Random randomGenerator = new Random();
 
     /**
@@ -46,7 +46,7 @@ public class PSGD {
         trainingSet.add(instance);
       }
 
-      SVM model = new SVM(trainingSet, 0.1, 0.25);
+      SVM model = new SVM(trainingSet, 0.02, 0.0625);
 
       /**
        * null is important here since we don't want to do additional preprocessing
@@ -76,7 +76,7 @@ public class PSGD {
 
     // set to the same K as above for optimal performance on the cluster
     // If you don't, you will likely have timeout problems.
-    conf.setNumReduceTasks(10);
+    conf.setNumReduceTasks(50);
 
     FileInputFormat.setInputPaths(conf, new Path(args[0]));
     FileOutputFormat.setOutputPath(conf, new Path(args[1]));

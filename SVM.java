@@ -4,7 +4,7 @@ import java.util.*;
 
 public class SVM {
 
-  private final double COMPARE_MARGIN = 0.00001;
+  private final double B = 0.0041375;
   // Hyperplane weights.
   RealVector weights;
 
@@ -21,9 +21,13 @@ public class SVM {
     int dimension = trainingSet.get(0).getFeatures().getDimension();
     RealVector w = new RealVector(dimension);
     for (TrainingInstance instance : trainingSet) {
-      RealVector gradientStep = gradient(w, instance).scaleThis(eta * -1);
-      w.add(gradientStep);
-      projection(w, lambda);
+      double value = instance.getLabel() * w.dotProduct(instance.getFeatures());
+      if (value >= 1) {
+        continue;
+      } else {
+        w.add(instance.getFeatures().scale(eta * instance.getLabel()));
+        project(w, 1 / lambda);
+      }
     }
     this.weights = w;
   }
@@ -33,28 +37,14 @@ public class SVM {
   */
 
   /** 
-  * Project a vector w into the feasible set with radius lambda
+  * Project a vector w into the feasible set with radius
   */
-  private void projection(RealVector w, double lambda) {
-    if (w.getNorm() > Math.sqrt(lambda)) {
-      double scaleFactor = lambda * w.getNorm();
+  private void project(RealVector w, double radius) {
+    double scaleFactor = radius / w.getNorm();
+    if (scaleFactor < 1) {
       w.scaleThis(scaleFactor);
-    } 
-    return;
-  }
-
-  /**
-  * Calculate gradient
-  */
-
-  private RealVector gradient(RealVector w, TrainingInstance instance) {
-    double value = instance.getLabel() * w.dotProduct(instance.getFeatures());
-    int dimension = w.getDimension();
-    if (value >= 1) {
-      return new RealVector(dimension);
-    } else {
-      return instance.getFeatures().scale(instance.getLabel() * -1);
     }
+    return;
   }
 
   /**
@@ -86,6 +76,7 @@ public class SVM {
       weights.add(svm.getWeights());
 
     this.weights = weights.scaleThis(1.0/svmList.size());
+    System.out.println(this.toString());
   }
 
   /**
@@ -94,6 +85,7 @@ public class SVM {
   public int classify(TrainingInstance ti) {
     RealVector features = ti.getFeatures();
     double result = ti.getFeatures().dotProduct(this.weights);
+    //System.out.println(result);
     if (result >= 0) return 1;
     else return -1;
   }
