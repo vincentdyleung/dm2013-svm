@@ -4,7 +4,6 @@ import java.util.*;
 
 public class SVM {
 
-  private final double B = 0.0041375;
   // Hyperplane weights.
   RealVector weights;
 
@@ -20,7 +19,9 @@ public class SVM {
     // TODO: Implement me!
     int dimension = trainingSet.get(0).getFeatures().getDimension();
     RealVector w = new RealVector(dimension);
+    int t = 0;
     for (TrainingInstance instance : trainingSet) {
+      t++;
       double value = instance.getLabel() * w.dotProduct(instance.getFeatures());
       if (value >= 1) {
         continue;

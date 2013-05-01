@@ -11,19 +11,22 @@ import java.util.*;
 
 public class PSGD {
 
+  public static final int CHOSEN_K = 100;
+  public static final double CHOSEN_LAMBDA = 0.01;
+  public static final double CHOSEN_ETA = 0.1;
+
   /**
    * The Map class has to make sure that the data is shuffled to the various machines.
    */
   public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, LongWritable, Text> {
 
-    final int K = 50;
     final Random randomGenerator = new Random();
 
     /**
      * Spread the data around on K different machines.
      */
     public void map(LongWritable key, Text value, OutputCollector<LongWritable, Text> output, Reporter reporter) throws IOException {
-      LongWritable machineId = new LongWritable(randomGenerator.nextInt(K));
+      LongWritable machineId = new LongWritable(randomGenerator.nextInt(CHOSEN_K));
       output.collect(machineId, value);
     }
   }
@@ -46,7 +49,7 @@ public class PSGD {
         trainingSet.add(instance);
       }
 
-      SVM model = new SVM(trainingSet, 0.02, 0.0625);
+      SVM model = new SVM(trainingSet, CHOSEN_LAMBDA, CHOSEN_ETA);
 
       /**
        * null is important here since we don't want to do additional preprocessing
@@ -76,7 +79,7 @@ public class PSGD {
 
     // set to the same K as above for optimal performance on the cluster
     // If you don't, you will likely have timeout problems.
-    conf.setNumReduceTasks(50);
+    conf.setNumReduceTasks(CHOSEN_K);
 
     FileInputFormat.setInputPaths(conf, new Path(args[0]));
     FileOutputFormat.setOutputPath(conf, new Path(args[1]));
